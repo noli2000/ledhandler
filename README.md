@@ -29,5 +29,6 @@ TODO:
 references: 
 
 snipsmanagercore : https://github.com/snipsco/snipsmanagercore (not really a fork...)
+
 Respeaker Protocol : https://github.com/respeaker/ReSpeaker-Microphone-Array-HID-tool/blob/master/respeaker%20micarray%20hid%20protocol.xlsx
 
