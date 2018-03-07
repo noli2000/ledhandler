@@ -13,7 +13,7 @@ Current version has the following events and actions :
 
 * Standby (hotword/toggleOn) : Activate "DOA" mode
 * Intent OK (nlu/intentParsed) : Set all LEDs to green (= OK)
-* Intent NOK (nlu/intentNotRecognized) : Set all LEDs to red (= error)
+* Intent NOK (nlu/intentNotRecognized) : Flashing red LEDs (= error)
 * Listening (hotword/#/detected) : Looping rainbow
 * Speaking (tts/say) : Switching between colors
 
