@@ -24,11 +24,9 @@ class ThreadHandler(Singleton):
         """
         run_event = threading.Event()
         run_event.set()
-        stop_anim_event = threading.Event()
         thread = threading.Thread(target=target, args=args + (run_event, ))
         self.thread_pool.append(thread)
         self.run_events.append(run_event)
-        self.run_events.append(stop_anim_event)
         thread.start()
 
     def start_run_loop(self, logger=None):

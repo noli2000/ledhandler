@@ -5,6 +5,8 @@ import json
 import time
 import re
 import logging
+import sys
+import argparse
 
 from socket import error as socket_error
 
@@ -38,7 +40,7 @@ class Server():
         """
         self.logger = logger
         self.thread_handler = ThreadHandler()
-        self.state_handler = StateHandler(self.thread_handler)
+        self.state_handler = StateHandler(self.thread_handler, logger)
 
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
@@ -52,7 +54,7 @@ class Server():
     def start(self):
         """ Start the MQTT client. """
         self.thread_handler.run(target=self.start_blocking)
-        self.thread_handler.start_run_loop(logger)
+        self.thread_handler.start_run_loop(self.logger)
 
     def start_blocking(self, run_event):
         """ Start the MQTT client, as a blocking method.
@@ -171,9 +173,10 @@ class Server():
         if self.logger is not None:
             self.logger.error(message)
 
-
-if __name__ == '__main__':
+def main_start():
+    # define logging parameters
     logger = logging.getLogger(__name__)
+    print (logger)
     handler = logging.StreamHandler()
     log_format = '\033[2m%(asctime)s\033[0m [%(levelname)s] %(message)s'
     date_format = '%Y-%m-%d %H:%M:%S'
@@ -182,5 +185,35 @@ if __name__ == '__main__':
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
 
-    led_handler = Server("localhost", 1883, logger)
+    # start the handler
+    led_handler = Server("localhost", 1883, logger = logger)
     led_handler.start()
+
+
+def main_try(state_to_try=None):
+    if state_to_try is None:
+        parser.print_usage()
+        return
+    else:
+        print("Sorry, not yet implemented !")
+
+def main_list():
+    
+    for state in State().list():
+        print (state)
+
+if __name__ == '__main__':
+
+    # Defin arguments and usage
+    parser = argparse.ArgumentParser(description="LED handler for ReSpeaker used with Snips")
+    parser.add_argument('action', type=str, choices=['start', 'list', 'try'], help="Action to launch in the LED handler")
+    parser.add_argument('--state', help="The state you wish to try")
+    args = parser.parse_args(sys.argv[1:])
+
+    if (args.action == 'list'):
+        main_list()
+    elif (args.action == 'start'):
+        main_start()
+    elif (args.action == 'try'):
+        main_try(args.state)
+

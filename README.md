@@ -31,9 +31,9 @@ Tested with:
 * colour module (pip3 install colour)
 
 ## TODO:
-- [] config file (use /etc/snips.toml ?)
-- [] add animations/colors in config
-
+- [ ] config file (use /etc/snips.toml ?)
+- [ ] add animations/colors in config
+- [ ] Implement manual testing of each state
 
 ## References: 
 

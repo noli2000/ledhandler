@@ -6,11 +6,18 @@ from leds_service import LedsService
 class State:
     none, welcome, goodbye, hotword_toggle_on, hotword_detected, asr_start_listening, asr_text_captured, error, idle, session_queued, session_started, session_ended, nlu_intent_parsed, say = range(14)
 
+    def list(self):
+        return [s for s in dir(self) if not s.startswith('__') and not s == 'list']
+    
+    def get_id(self, state_name=None):
+        if state_name is not None:
+            return self.__dict__[state_name]
+
 class StateHandler:
     """ Handler for various states of the system. """
 
-    def __init__(self, thread_handler):
-        self.leds_service = LedsService(thread_handler)
+    def __init__(self, thread_handler, logger = None):
+        self.leds_service = LedsService(thread_handler, logger)
         self.state = None
 
     def set_state(self, state):

@@ -29,11 +29,12 @@ class LedsService:
         """ Leds states.- """
         none, waking_up, standby, listening, loading, notify, error, intentParsed, speak = range(9)
 
-    def __init__(self, thread_handler):
+    def __init__(self, thread_handler, logger = None):
         self.thread_handler = thread_handler
         led_device = USB.get_boards()
+        self.logger = logger
         if led_device == USB.Device.respeaker:
-            self.animator = ReSpeakerAnimator()
+            self.animator = ReSpeakerAnimator(logger = logger)
         else:
             self.animator = None
 
@@ -59,7 +60,8 @@ class Animation(Singleton):
 
 class ReSpeakerAnimator(object):
 
-    def __init__(self):
+    def __init__(self, logger = None):
+        self.logger = logger
         self.hid = usb_hid.get()
         self.led_dict = {
             'LED_1': 3,
@@ -128,11 +130,17 @@ class ReSpeakerAnimator(object):
                 {value: int("000000", 16) for value in self.led_dict.values()})
 
         self.animation_error = []
+        self.animation_error.append({value: [0, 0, 255*(value % 2)] for value in self.led_dict.values()})
+        self.animation_error.append({value: [0, 0, 255*((value+1) % 2)] for value in self.led_dict.values()})
+        self.animation_error = self.animation_error * 5
+
+        """
         for frame in range(0, 3):
             self.animation_error.append(
                 {value: [255,0,0] for value in self.led_dict.values()})
             self.animation_error.append(
                 {value: [0,0,0] for value in self.led_dict.values()})
+        """
 
         # Set the ReSpeaker in the right mode
         try:
@@ -197,20 +205,24 @@ class ReSpeakerAnimator(object):
 
     def run(self, id, animation, run_event):
         if animation.active == LedsService.State.none:
-            print ("Animation : none")
+            if not logger is None:
+                logger.debug("Launching animation : none")
+            time.sleep(2)
             self.off()
             time.sleep(0.2)
             self.doa()
 
         elif animation.active == LedsService.State.standby:
-            print ("Animation : Standby")
-            time.sleep(0.3)
+            if not self.logger is None:
+                self.logger.debug("Launching animation : Standby")
+            time.sleep(2)
             self.off()
             time.sleep(0.2)
             self.doa()
 
         elif animation.active == LedsService.State.listening:
-            print ("Animation : Listening")
+            if not self.logger is None:
+                self.logger.debug("Launching animation : Listening")
             try:
                 init_addr = 0  # 0x0
                 init_data = 6  # 0x00000006
@@ -230,11 +242,13 @@ class ReSpeakerAnimator(object):
                     time.sleep(0.025)
 
         elif animation.active == LedsService.State.intentParsed:
-            print ("Animation : Intent Parsed")
+            if not self.logger is None:
+                self.logger.debug("Launching animation : Intent Parsed")
             self.set_color(r=0, g=255, b=0)
 
         elif animation.active == LedsService.State.speak:
-            print ("Animation: Speak")
+            if not self.logger is None:
+                self.logger.debug("Launching animation: Speak")
 
             while True:
                 if animation.id != id or not run_event.is_set():
@@ -248,13 +262,22 @@ class ReSpeakerAnimator(object):
                         time.sleep(0.05)
         
         elif animation.active == LedsService.State.error:
-            print ("Animation: Error")
-            """
+            if not self.logger is None:
+                self.logger.debug("Launching animation: Error")
+            try:
+                init_addr = 0  # 0x0
+                init_data = 6  # 0x00000006
+
+                self.write(init_addr, init_data)
+            except Exception as e:
+                print(e.message)
+            
             for item in self.animation_error:
-                if animation.id != id or not run_event.is_set():
-                    break
+                """if animation.id != id or not run_event.is_set():
+                    break"""
                 for k, v in item.items():
                     self.write(k, v)
                 time.sleep(0.2)
-            """
-            self.set_color(r=255, g=0, b=0)
+            
+            #self.set_color(r=255, g=0, b=0)
+            #time.sleep(1)
