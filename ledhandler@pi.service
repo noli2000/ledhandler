@@ -1,0 +1,12 @@
+[Unit]
+Description=LED Handler
+After=snips.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/ledhandler
+ExecStart=/usr/bin/python3 server.py start
+
+[Install]
+WantedBy=multi-user.target

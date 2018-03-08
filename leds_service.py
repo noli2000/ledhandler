@@ -79,9 +79,9 @@ class ReSpeakerAnimator(object):
             'LED_13': 14,
         }
 
-        self.animation_waking_up = [
-            {value: 2 * st for value in self.led_dict.values()} for st in range(127)]
-        
+        self.animation_waking_up = list(range(0,250,25)) + list(reversed(range(0,250,25)))
+        self.animation_waking_up = self.animation_waking_up * 2        
+
         self.animation_standby = [{value: st for value in self.led_dict.values(
         )} for st in list(range(0,255))]
 
@@ -142,15 +142,6 @@ class ReSpeakerAnimator(object):
                 {value: [0,0,0] for value in self.led_dict.values()})
         """
 
-        # Set the ReSpeaker in the right mode
-        try:
-            init_addr = 0  # 0x0
-            init_data = 6  # 0x00000006
-
-            self.write(init_addr, init_data)
-        except Exception as e:
-            print(e.message)
-
     def off(self):
         self.set_color(rgb=0)
 
@@ -162,6 +153,10 @@ class ReSpeakerAnimator(object):
 
     def doa(self):
         self.write(0, [7, 0, 0, 0])
+
+    def set_led_mode(self):
+        """ Set respeaker to Led by Led mode """
+        self.write(0, [6, 0, 0, 0])
 
     def write(self, address, data):
         if not type(data) is list:
@@ -220,17 +215,18 @@ class ReSpeakerAnimator(object):
             time.sleep(0.2)
             self.doa()
 
+        elif animation.active == LedsService.State.waking_up:
+            if not self.logger is None:
+                self.logger.debug("Launching animation : Waking Up")
+            for item in self.animation_waking_up:
+                self.set_color(r=0,g=0,b=item)
+                time.sleep(0.05)
+
         elif animation.active == LedsService.State.listening:
             if not self.logger is None:
                 self.logger.debug("Launching animation : Listening")
-            try:
-                init_addr = 0  # 0x0
-                init_data = 6  # 0x00000006
 
-                self.write(init_addr, init_data)
-            except Exception as e:
-                print(e.message)
-
+            self.set_led_mode()
             while True:
                 if animation.id != id or not run_event.is_set():
                     break
@@ -264,14 +260,8 @@ class ReSpeakerAnimator(object):
         elif animation.active == LedsService.State.error:
             if not self.logger is None:
                 self.logger.debug("Launching animation: Error")
-            try:
-                init_addr = 0  # 0x0
-                init_data = 6  # 0x00000006
-
-                self.write(init_addr, init_data)
-            except Exception as e:
-                print(e.message)
             
+            self.set_led_mode()
             for item in self.animation_error:
                 """if animation.id != id or not run_event.is_set():
                     break"""

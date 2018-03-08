@@ -85,8 +85,6 @@ class Server():
         self.log_info("Subscribing to topics {}".format(topics))
         self.client.subscribe(topics)
 
-        self.state_handler.set_state(State.hotword_toggle_on)
-
         while run_event.is_set():
             try:
                 self.client.loop()
@@ -188,7 +186,7 @@ def main_start():
     # start the handler
     led_handler = Server("localhost", 1883, logger = logger)
     led_handler.start()
-
+    #led_hanlder.state_handler.set_state(State.welcome)
 
 def main_try(state_to_try=None):
     if state_to_try is None:
